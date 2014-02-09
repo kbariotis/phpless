@@ -1,26 +1,53 @@
 <?php
 
+/**
+ * PHPLess
+ *
+ * Less Asset Management
+ *
+ * @author Kostas Bariotis <konmpar@gmail.com>
+ * @licence MIT Licence
+ */
+
 namespace phpless;
 
+/**
+ * Class represents a Less physical file
+ */
 class Less
 {
 
   private
+    /**
+     * @var string $file Full path of the original file
+     */
     $file,
+    /**
+     * @var string $cache Full path of the cached file
+     */
     $cache;
 
+  /**
+   * @param string $lessFile       Full path of the original file
+   * @param string $cacheDirectory Directory of Cached file
+   */
   public function __construct($lessFile, $cacheDirectory)
   {
     $this->file = $lessFile;
     $this->cache = $cacheDirectory . basename($lessFile);
   }
 
+  /**
+   * File compilation to CSS
+   * @return string Compiled CSS
+   */
   public function compile()
   {
     $compiler = new \lessc();
     try {
 
-      return $compiler->compileFile($this->file);
+      file_put_contents($this->getCacheFile(),
+        $compiler->compileFile($this->file));
 
     } catch (exception $e) {
       throw new RuntimeException();
@@ -32,7 +59,7 @@ class Less
     return basename($this->file);
   }
 
-  public function getFile()
+  public function getOriginFile()
   {
     return $this->file;
   }
@@ -42,8 +69,14 @@ class Less
     return $this->cache;
   }
 
+  /**
+   * Validate the cache
+   * @return boolean Whether a cached version exists
+   */
   public function validate()
   {
+    $compiler = new \lessc();
+
     if(!file_exists($this->cache))
     {
       $assetDirectory = dirname($this->getCacheFile());
@@ -54,6 +87,8 @@ class Less
     }
     else
     {
+      if(!$compiler->checkedCompile($this->file, $this->cache))
+        $this->compile();
       return true;
     }
   }

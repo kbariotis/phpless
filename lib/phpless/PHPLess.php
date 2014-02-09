@@ -1,24 +1,46 @@
 <?php
 
+/**
+ * PHPLess
+ *
+ * Less Asset Management
+ *
+ * @author Kostas Bariotis <konmpar@gmail.com>
+ * @licence MIT Licence
+ */
+
 namespace phpless;
 
-/**
- *
- */
 class PHPLess
 {
 
   private
+    /**
+     * @var Less $lessFile
+     */
     $lessFile,
+    /**
+     * @var string $lessDirectory Full path where
+     * Less Files are located
+     */
     $lessDirectory,
+    /**
+     * @var string $cacheDirectory Full path where
+     * Cached files should stored
+     */
     $cacheDirectory,
+    /**
+     * @var int $cacheExpiration Expiration time of
+     * cached files
+     */
     $cacheExpiration = 8000;
 
   /**
-   * @param [type] $options [description]
+   * @param array $options
    */
   public function __construct($options)
   {
+    session_cache_limiter('public');
 
     foreach($options as $key=>$option){
       $this->{"set".ucfirst($key)}($option);
@@ -59,7 +81,8 @@ class PHPLess
     if(isset($dir) && is_dir($dir))
       $this->lessDirectory = $dir;
     else
-      throw new \InvalidArgumentException("Specify a valid directory where LESS files are located");
+      throw new \InvalidArgumentException("Specify a valid
+        directory where LESS files are located");
 
     return $this;
   }
@@ -81,9 +104,7 @@ class PHPLess
   }
 
   /**
-   * [serve description]
-   * @param  [type] $asset [description]
-   * @return [type]        [description]
+   * @param  string $asset Full path of the Less file to be served
    */
   public function serve($asset)
   {
@@ -92,15 +113,20 @@ class PHPLess
 
     if(!$this->lessFile->validate())
     {
-      $finalFileContents = $this->lessFile->compile();
-      file_put_contents($this->lessFile->getCacheFile(), $finalFileContents);
+      $this->lessFile->compile();
+    }
 
-      echo $finalFileContents;
-    }
-    else
-    {
-      echo file_get_contents($this->lessFile->getCacheFile());
-    }
+    /** @see http://www.mnot.net/cache_docs/ */
+    header('Last-Modified: '.gmdate('D, d M Y H:i:s',
+      filemtime($this->lessFile->getCacheFile())).' GMT', true, 304);
+    Header("Cache-Control: must-revalidate");
+    header('Content-Length: '.filesize($this->lessFile->getCacheFile()));
+    header('Content-Type: text/css');
+    header('Expires: ' . gmdate('D, d M Y H:i:s',
+        filemtime($this->lessFile->getCacheFile()) + $this->cacheExpiration));
+
+    /* Output Compiled File */
+    echo file_get_contents($this->lessFile->getCacheFile());
 
   }
 
