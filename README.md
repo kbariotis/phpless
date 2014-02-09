@@ -19,7 +19,7 @@ folder for how to instatiate it. Remember to change your `.htaccess` file.
 author
 ------
 
-[Kostas Bariotis](http://twitter/com/kbariotis) @ konmpar@gmail.com
+[Kostas Bariotis](http://twitter.com/kbariotis) @ konmpar@gmail.com
 
 licence
 ------
