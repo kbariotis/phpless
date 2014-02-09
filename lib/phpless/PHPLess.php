@@ -33,7 +33,7 @@ class PHPLess
      * @var int $cacheExpiration Expiration time of
      * cached files
      */
-    $cacheExpiration = 8000;
+    $cacheExpiration = 60 * 60 * 24 * 3; /* Three days */
 
   /**
    * @param array $options
