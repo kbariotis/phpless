@@ -33,7 +33,7 @@ class PHPLess
      * @var int $cacheExpiration Expiration time of
      * cached files
      */
-    $cacheExpiration = 0; /* Three days */
+    $cacheExpiration = 0;
 
   /**
    * @param array $options
@@ -100,7 +100,7 @@ class PHPLess
   public function loadAssetFromRequest()
   {
     $asset = $this->lessDirectory .
-              basename($_SERVER['REQUEST_URI']);
+      basename($_SERVER['REQUEST_URI']);
 
     if(!file_exists($asset))
       header("HTTP/1.0 404 Not Found");
@@ -109,7 +109,7 @@ class PHPLess
   }
 
   /**
-   * @param  string $asset Full path of the Less file to be served
+   * Serve request
    */
   public function serve()
   {
@@ -141,9 +141,8 @@ class PHPLess
     Header("Cache-Control: public, must-revalidate, max-age=0");
     header('Expires: -1');
 
-
     /* Output Compiled File */
-    echo file_get_contents($this->lessFile->getCacheFile());
+    $this->lessFile->dump();
 
   }
 

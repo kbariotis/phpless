@@ -95,4 +95,12 @@ class Less
     }
   }
 
+  /**
+   * Dump contents of the file
+   */
+  public function dump()
+  {
+    echo file_get_contents($this->getCacheFile());
+  }
+
 }
