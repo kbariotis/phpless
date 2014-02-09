@@ -9,7 +9,7 @@ class PHPLess
 {
 
   private
-    $asset,
+    $lessFile,
     $lessDirectory,
     $cacheDirectory,
     $cacheExpiration = 8000;
@@ -31,7 +31,7 @@ class PHPLess
   public function setCacheExpiration($duration)
   {
 
-    if(isset($duration))
+    if(isset($duration) && $duration!=NULL)
       $this->cacheExpiration = $duration;
 
     return $this;
@@ -42,7 +42,7 @@ class PHPLess
    */
   public function setCacheDirectory($dir)
   {
-    if(isset($dir))
+    if(isset($dir) && $dir!=NULL)
       $this->cacheDirectory = $dir;
     else
       throw new \InvalidArgumentException("Specify a cache directory");
@@ -87,51 +87,21 @@ class PHPLess
    */
   public function serve($asset)
   {
-    /* Object Generalization?!?! */
-    switch(pathinfo($asset, PATHINFO_EXTENSION))
+
+    $this->lessFile = new Less($asset, $this->cacheDirectory);
+
+    if(!$this->lessFile->validate())
     {
-      case "less" :
-      {
+      $finalFileContents = $this->lessFile->compile();
+      file_put_contents($this->lessFile->getCacheFile(), $finalFileContents);
 
-        $assetType = "less";
-        $assetDirectory = $this->cacheDirectory .
-          $assetType . '/';
-        $class = 'Asset\\'.ucfirst($assetType);
-
-        $this->asset = new Asset\Less($asset);
-
-        if(!$this->validateAssetInCache($assetDirectory .
-          $this->asset->getFileName()))
-        {
-          $finalFileContents = $this->asset->compile();
-          file_put_contents($assetDirectory . $this->asset->getFileName(), $finalFileContents);
-
-          echo $finalFileContents;
-        }
-        else
-        {
-          echo file_get_contents($assetDirectory . $this->asset->getFileName());
-        }
-
-
-      }
-    }
-  }
-
-  public function validateAssetInCache($asset)
-  {
-    if(!file_exists($asset))
-    {
-      $assetDirectory = dirname($asset);
-      if (!is_dir($assetDirectory)) @mkdir($assetDirectory, 0777, true);
-      if (!is_dir($assetDirectory)) throw new \RuntimeException();
-
-      return false;
+      echo $finalFileContents;
     }
     else
     {
-      return true;
+      echo file_get_contents($this->lessFile->getCacheFile());
     }
+
   }
 
 }

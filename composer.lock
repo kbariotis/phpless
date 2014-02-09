@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "c39316193c5daa70d0a72d3ad5af6229",
+    "hash": "e4f5f05515273795d4f60d07c9289510",
     "packages": [
         {
             "name": "leafo/lessphp",
