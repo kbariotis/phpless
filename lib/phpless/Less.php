@@ -1,8 +1,8 @@
 <?php
 
-namespace phpless\Asset;
+namespace phpless;
 
-class Less extends File
+class Less
 {
 
   private $file;
