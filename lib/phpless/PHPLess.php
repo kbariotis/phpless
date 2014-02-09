@@ -33,22 +33,26 @@ class PHPLess
      * @var int $cacheExpiration Expiration time of
      * cached files
      */
-    $cacheExpiration = 259200; /* Three days */
+    $cacheExpiration = 0; /* Three days */
 
   /**
    * @param array $options
    */
   public function __construct($options)
   {
-    session_cache_limiter('public');
-    session_cache_expire(30);
 
     foreach($options as $key=>$option){
       $this->{"set".ucfirst($key)}($option);
     }
 
-    $this->serve($this->loadAssetFromRequest());
+    $this->setLessFile()->serve();
 
+  }
+
+  public function setLessFile()
+  {
+    $this->lessFile = new Less($this->loadAssetFromRequest(), $this->cacheDirectory);
+    return $this;
   }
 
   public function setCacheExpiration($duration)
@@ -107,42 +111,36 @@ class PHPLess
   /**
    * @param  string $asset Full path of the Less file to be served
    */
-  public function serve($asset)
+  public function serve()
   {
 
-    $this->lessFile = new Less($asset, $this->cacheDirectory);
+    $headers = apache_request_headers();
 
-    $if_modified_since = isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) ?
-      $_SERVER['HTTP_IF_MODIFIED_SINCE'] : false;
-    $if_none_match = isset($_SERVER['HTTP_IF_NONE_MATCH']) ?
-      $_SERVER['HTTP_IF_NONE_MATCH'] : false;
+    $ifModifiedSince = isset($headers['If-Modified-Since']) ?
+      $headers['If-Modified-Since'] : false;
+    $lastModifiedTime = gmdate('D, d M Y H:i:s ',
+      filemtime($this->lessFile->getOriginFile())) . 'GMT';
 
-    /** Check if file is in Cache */
-    if(!$this->lessFile->validate())
+    /** Check if file is in Cache or has been modified */
+    if(!$this->lessFile->validate() ||
+      !($ifModifiedSince && strtotime($ifModifiedSince) ==
+        filemtime($this->lessFile->getOriginFile())))
     {
       $this->lessFile->compile();
-      $tsstring = gmdate('D, d M Y H:i:s ', filemtime($this->lessFile->getCacheFile())) . 'GMT';
-      header("Last-Modified: $tsstring");
+      header("Last-Modified: $lastModifiedTime");
     }
     else
     {
-      $tsstring = gmdate('D, d M Y H:i:s ', filemtime($this->lessFile->getCacheFile())) . 'GMT';
-      if ($if_modified_since && date($if_modified_since) <= date($tsstring))
-      {
-        header('HTTP/1.1 304 Not Modified');
-      }
-      else
-      {
-        header("Last-Modified: $tsstring");
-      }
+      /** Check if origin file didn't been modified */
+      header('HTTP/1.0 304 Not Modified');
     }
 
     /** @see http://www.mnot.net/cache_docs/ */
-    Header("Cache-Control: must-revalidate");
     header('Content-Length: ' . filesize($this->lessFile->getCacheFile()));
     header('Content-Type: text/css');
-    header('Expires: ' . gmdate('D, d M Y H:i:s',
-        filemtime($this->lessFile->getCacheFile()) + $this->cacheExpiration));
+    Header("Cache-Control: public, must-revalidate, max-age=0");
+    header('Expires: -1');
+
 
     /* Output Compiled File */
     echo file_get_contents($this->lessFile->getCacheFile());

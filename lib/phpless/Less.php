@@ -79,7 +79,7 @@ class Less
 
     if(!file_exists($this->cache))
     {
-      /* Create directories for late use */
+      /* Create directories for use later */
       $assetDirectory = dirname($this->getCacheFile());
       if (!is_dir($assetDirectory)) @mkdir($assetDirectory, 0777, true);
       if (!is_dir($assetDirectory)) throw new \RuntimeException();
