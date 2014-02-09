@@ -1,0 +1,6 @@
+<IfModule mod_rewrite.c>
+  Options +FollowSymlinks
+  RewriteEngine On
+
+  RewriteRule \.(?:less)$ index.php
+</IfModule>

@@ -1,0 +1,21 @@
+{
+    "name": "kbariotis/phpless",
+    "require": {
+        "leafo/lessphp": "master-dev"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "3.7.31"
+    },
+    "autoload": {
+        "psr-0": {
+            "phpless": "lib/"
+        }
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Kostas Bariotis",
+            "email": "konmpar@gmail.com"
+        }
+    ]
+}
